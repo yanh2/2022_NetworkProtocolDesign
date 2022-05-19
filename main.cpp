@@ -194,7 +194,7 @@ int main(void){
                 //Error handling 코드 넣기(a에 대해서만. c와 d는 keep이므로 코드 작성하지 않고 냅둠)
                 else if(arqEvent_checkEventFlag(arqEvent_dataToSend)){
                     pc.printf("[MAIN][ERROR] Cannot happen event %i at state %i\n", arqEvent_dataToSend, main_state);
-               arqEvent_clearEventFlag(arqEvent_dataToSend);
+					arqEvent_clearEventFlag(arqEvent_dataToSend);
                 }
                 break;
 
@@ -211,8 +211,8 @@ int main(void){
                 {
                     if(retxCnt < ARQ_MAXRETRANSMISSION){
                         arqLLI_sendData(arqPdu, pduSize, dest_ID);
-                  retxCnt = retxCnt + 1;
-                  main_state = MAINSTATE_TX;
+						retxCnt = retxCnt + 1;
+						main_state = MAINSTATE_TX;
                     }else{
                         main_state = MAINSTATE_IDLE;
                     }
@@ -222,12 +222,12 @@ int main(void){
                     uint8_t srcId = arqLLI_getSrcId();
                     uint8_t* dataPtr = arqLLI_getRcvdDataPtr();
                     uint8_t size = arqLLI_getSize();
-               uint8_t rxSeqNum = arqMsg_getSeq(dataPtr);
+					uint8_t rxSeqNum = arqMsg_getSeq(dataPtr);
 
                     pc.printf("\n -------------------------------------------------\nRCVD from %i : %s (length:%i, seq:%i)\n -------------------------------------------------\n", 
                                 srcId, arqMsg_getWord(dataPtr), size, rxSeqNum);
 
-               pduSize = arqMsg_encodeAck(arqAck, rxSeqNum);
+					pduSize = arqMsg_encodeAck(arqAck, rxSeqNum);
                     arqLLI_sendData(arqAck, ARQMSG_ACKSIZE, srcId);
 
                     pc.printf("[MAIN] sending ACK to %i (seq:%i)\n", srcId, rxSeqNum);
