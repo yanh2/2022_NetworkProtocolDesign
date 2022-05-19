@@ -8,7 +8,8 @@
 
 //FSM state -------------------------------------------------
 #define L3STATE_IDLE                0
-
+#define L3STATE_WAIT_SAY            1
+#define L3STATE_SAY_ON              2
 
 //state variables
 static uint8_t main_state = L3STATE_IDLE; //protocol state
@@ -28,7 +29,13 @@ static Serial pc(USBTX, USBRX);
 static void L3service_processInputWord(void)
 {
     char c = pc.getc();
-    if (!L3_event_checkEventFlag(L3_event_dataToSend))
+    // state가 say on 가 아니야. 
+        // char c = 'y' -> 발언권 보내
+    /*if (L3_timer_getTimerStatus(0) == 0 && c == 'y') {
+        L3_event_setEventFlag(L3_event_sayReqToSend);
+    }*/
+    
+    else if (!L3_event_checkEventFlag(L3_event_dataToSend))
     {
         if (c == '\n' || c == '\r')
         {
@@ -50,13 +57,13 @@ static void L3service_processInputWord(void)
 }
 
 
-
 void L3_initFSM()
 {
     //initialize service layer
     pc.attach(&L3service_processInputWord, Serial::RxIrq);
 
-    pc.printf("Give a word to send : ");
+    //pc.printf("Give a word to send : ");
+    pc.printf("발언권을 얻으려면 'y'를 눌러주세요. : ");
 }
 
 void L3_FSMrun(void)
@@ -72,6 +79,7 @@ void L3_FSMrun(void)
     {
         case L3STATE_IDLE: //IDLE state description
             
+            // 메세지 받는 경우
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
                 //Retrieving data info.
@@ -85,6 +93,8 @@ void L3_FSMrun(void)
                 
                 L3_event_clearEventFlag(L3_event_msgRcvd);
             }
+
+            // 메세지 보내는 경우
             else if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
             {
 #ifdef ENABLE_CHANGEIDCMD
@@ -96,20 +106,61 @@ void L3_FSMrun(void)
                 }
                 else
 #endif
-                {
+                // 1. a) SDU in, c1 = false
+                if (L3_timer_getTimerStatus(0) == 0) {
+                    if (originalWord[0] == 'y' && originalWord.length==1) {
+                    //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
+                    // 
+                    }
+                } 
+
+/* 
+                {                    
                     //msg header setting
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_LLI_dataReqFunc(sdu, wordLen);
 
                     debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 }
-                
+*/
                 wordLen = 0;
 
                 pc.printf("Give a word to send : ");
 
                 L3_event_clearEventFlag(L3_event_dataToSend);
             }
+            break;
+
+        case L3STATE_WAIT_SAY:
+            
+            // SDU 들어옴
+                // if sayAccept  
+                    // input_timer 시작하면서 sayReq_timer 중지
+                    // sayON State로 움직여요 
+
+                // else if sayReject 
+                    // IDLE State로 움직여요 
+                    // sayReq_timer 중지해요
+
+            break;
+
+        case L3STATE_SAY_ON:
+            // L3service_processInputWord 실행해요.
+/*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
+
+            
+            それが条件だから...
+            
+                {                    
+                    //msg header setting
+                    strcpy((char*)sdu, (char*)originalWord);
+                    L3_LLI_dataReqFunc(sdu, wordLen);
+
+                    debug_if(DBGMSG_L3, "[L3] sending msg....\n");
+                }
+
+            input_timer 중지 
+*/
             break;
 
         default :
