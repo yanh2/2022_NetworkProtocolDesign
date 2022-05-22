@@ -108,7 +108,7 @@ void L3_FSMrun(void)
 #endif
                 // 1. a) SDU in, c1 = false
                 if (L3_timer_getTimerStatus(0) == 0) {
-                    if (originalWord[0] == 'y' && originalWord.length==1) {
+                    if (originalWord[0] == 'y' && originalWord.size()==1) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
                     // 
                     }
