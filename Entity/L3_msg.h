@@ -9,6 +9,8 @@
 #define L3_MSG_OFFSET_SEQ   1
 #define L3_MSG_OFFSET_DATA  2
 
+#define L3_MSG_REQSIZE      3
+
 
 int L3_msg_checkIfData(uint8_t* msg);
 int L3_msg_checkIfReq(uint8_t* msg);
