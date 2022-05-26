@@ -12,9 +12,13 @@ static uint8_t sayReq_timerStatus = 0;
 
 
 //timer event : ARQ timeout
-void L2_timer_timeoutHandler(void) 
+void L2_timer_timeoutHandler(int t_num) 
 {
-    timerStatus = 0;
+    if (t_num == 0){
+        input_timerStatus = 0;
+    } else {
+        sayReq_timerStatus = 0;
+    }
     L2_event_setEventFlag(L2_event_arqTimeout);
 }
 
