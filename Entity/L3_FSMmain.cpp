@@ -35,7 +35,7 @@ static void L3service_processInputWord(void)
         L3_event_setEventFlag(L3_event_sayReqToSend);
     }*/
     
-    else if (!L3_event_checkEventFlag(L3_event_dataToSend))
+    if (!L3_event_checkEventFlag(L3_event_dataToSend))
     {
         if (c == '\n' || c == '\r')
         {
@@ -107,10 +107,19 @@ void L3_FSMrun(void)
                 else
 #endif
                 // 1. a) SDU in, c1 = false
-                if (L3_timer_getTimerStatus(0) == 0) {
-                    if (originalWord[0] == 'y' && originalWord.size()==1) {
+                if (L3_timer_sayReq_getTimerStatus() == 0) {
+                    if (originalWord[0] == 'y' && originalWord[1] == NULL) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
-                    // 
+                    
+                        strcpy((char*)sdu, (char*)originalWord);
+                        
+                        L3_msg_encodeReq(sdu);
+                            pc.printf(" now msg encoding");
+                        L3_LLI_dataReqFunc(sdu, wordLen);
+                            pc.printf("now exec msg date req func ");
+                        debug_if(DBGMSG_L3, "[L3] sending msg....\n");
+                        main_state = L3STATE_WAIT_SAY;
+                            pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : ");
                     }
                 } 
 
