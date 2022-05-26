@@ -27,14 +27,14 @@ void L3_timer_sayReq_timeoutHandler()
 void L3_timer_input_startTimer()
 {
     uint8_t waitTime = 1;
-    input_timer.attach(L3_timer_timeoutHandler(0), waitTime);
+    input_timer.attach(L3_timer_input_timeoutHandler, waitTime);
     input_timerStatus = 1;
 }
 
 void L3_timer_sayReq_startTimer()
 {
     uint8_t waitTime = 1;
-    sayReq_timer.attach(L3_timer_timeoutHandler(1), waitTime);
+    sayReq_timer.attach(L3_timer_sayReq_timeoutHandler, waitTime);
     sayReq_timerStatus = 1;
 }
 
