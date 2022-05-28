@@ -124,7 +124,7 @@ void L3_FSMrun(void)
                         pc.printf("Give a word to send : ");
                         L3_event_clearEventFlag(L3_event_dataToSend);     
                         pc.printf("NOW YOUR STATE IS  L3STATE_WAIT_SAY ! ! : \n");  
-                        main_state = L3STATE_WAIT_SAY;         
+                        // main_state = L3STATE_WAIT_SAY;         
                     }
                 } else {
                     // 이거 나중에...................
@@ -164,7 +164,7 @@ void L3_FSMrun(void)
 
                 pc.printf("현재 스테이트 : WAIT_SAY\n");
                 pc.printf("메세지 잘 받아진다. \n\n");
-                if(L3_msg_checkIfAcpt(L3_MSG_TYPE_ACPT))
+                if(L3_msg_checkIfAcpt(dataPtr))
                 {
                     L3_timer_input_startTimer();
                     L3_timer_sayReq_stopTimer();
@@ -173,7 +173,7 @@ void L3_FSMrun(void)
                     pc.printf("SAY_ON 스테이트로 이동합니다. \n");
                     main_state = L3STATE_SAY_ON;
                 }
-                else if(L3_msg_checkIfRejt(L3_MSG_TYPE_REJT))
+                else if(L3_msg_checkIfRejt(dataPtr))
                 {
                     L3_timer_sayReq_stopTimer();
                     pc.printf("메세지 타입 : REJECT\n");
