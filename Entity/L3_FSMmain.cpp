@@ -107,22 +107,24 @@ void L3_FSMrun(void)
                 else
 #endif
                 // 1. a) SDU in, c1 = false
-                if (L3_timer_sayReq_getTimerStatus() == 0) {
+                if (L3_timer_input_getTimerStatus() == 0) {
                     if (originalWord[0] == 'y' && originalWord[1] == NULL) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
                     
                         strcpy((char*)sdu, (char*)originalWord);
                         
                         L3_msg_encodeReq(sdu);
-                            pc.printf(" now msg encoding");
+                            pc.printf(" now msg encoding \n");
                         L3_LLI_dataReqFunc(sdu, wordLen);
-                            pc.printf("now exec msg date req func ");
+                            pc.printf("now exec msg date req func \n");
                         debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         main_state = L3STATE_WAIT_SAY;
-                            pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : ");
-                    }
-                } 
+                            pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");
 
+                        // 메세지 보내는 이벤트 종료
+                        L3_event_clearEventFlag(L3_event_dataToSend);
+                    }
+                }
 /* 
                 {                    
                     //msg header setting
@@ -132,11 +134,12 @@ void L3_FSMrun(void)
                     debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 }
 */
+/*
                 wordLen = 0;
 
                 pc.printf("Give a word to send : ");
-
-                L3_event_clearEventFlag(L3_event_dataToSend);
+*/
+                
             }
             break;
 
