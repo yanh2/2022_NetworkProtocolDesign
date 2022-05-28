@@ -29,11 +29,6 @@ static Serial pc(USBTX, USBRX);
 static void L3service_processInputWord(void)
 {
     char c = pc.getc();
-    // state가 say on 가 아니야. 
-        // char c = 'y' -> 발언권 보내
-    /*if (L3_timer_getTimerStatus(0) == 0 && c == 'y') {
-        L3_event_setEventFlag(L3_event_sayReqToSend);
-    }*/
     
     if (!L3_event_checkEventFlag(L3_event_dataToSend))
     {
@@ -117,16 +112,19 @@ void L3_FSMrun(void)
                         strcpy((char*)sdu, (char*)originalWord);
                         
                         // L3_msg_encodeReq(sdu);
-                        L3_LLI_dataReqFunc(sdu, wordLen)
+                        L3_LLI_dataReqFunc(sdu, wordLen);
                             debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         L3_timer_sayReq_startTimer();
+                        L3_timer_input_startTimer(); //확인용 추가
 
                         wordLen = 0;
                         pc.printf("Give a word to send : ");
                         L3_event_clearEventFlag(L3_event_dataToSend);
-
-                        pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
-                        main_state = L3STATE_WAIT_SAY;         
+                        
+                        //pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
+                        //main_state = L3STATE_WAIT_SAY;
+                        pc.printf("NOW YOUR STATE IS  SAY_ON ! ! : \n");  
+                        main_state = L3STATE_SAY_ON;         
                     }
                 } else {
                     // 이거 나중에...................
@@ -162,18 +160,10 @@ void L3_FSMrun(void)
             break;
 
         case L3STATE_SAY_ON:
-            L3service_processInputWord(); //보낼 메세지 입력하기
-/*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
-            それが条件だから...
+            pc.printf("Here is SAY_ON state ! ");
+            pc.printf("보낼 메세지를 입력하세요. : ");
             
-                {                    
-                    //msg header setting
-                    strcpy((char*)sdu, (char*)originalWord);
-                    L3_LLI_dataReqFunc(sdu, wordLen);
-
-                    debug_if(DBGMSG_L3, "[L3] sending msg....\n");
-                }
-
+/*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
             input_timer 중지 
 */
         if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
@@ -187,19 +177,21 @@ void L3_FSMrun(void)
                 }
                 else
 #endif
+            pc.printf("sent check 안 ");
             if (L3_timer_input_getTimerStatus() == 1) { //a) SDU in, c1 == true
                 strcpy((char*)sdu, (char*)originalWord);
                 L3_msg_encodeData(sdu, originalWord, wordLen);
                 L3_LLI_dataReqFunc(sdu, wordLen);
                 debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 L3_timer_input_stopTimer();
+                wordLen = 0;
+
+                pc.printf("Give a word to send : ");
+
+                L3_event_clearEventFlag(L3_event_dataToSend);
                 main_state = L3STATE_IDLE;
             }
-            wordLen = 0;
-
-            pc.printf("Give a word to send : ");
-
-            L3_event_clearEventFlag(L3_event_dataToSend);
+            
         }
         
         else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
