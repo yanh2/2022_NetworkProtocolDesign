@@ -115,17 +115,15 @@ void L3_FSMrun(void)
                     pc.printf("**************\n 이벤트 A) sayRequest 보내기\n ***************\n");
 
                         strcpy((char*)sdu, (char*)originalWord);
-                        
-                        // L3_msg_encodeReq(sdu);
-                        L3_LLI_dataReqFunc(sdu, wordLen)
+                        L3_msg_encodeReq(sdu);
+                        L3_LLI_dataReqFunc(sdu, wordLen);
                             debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         L3_timer_sayReq_startTimer();
 
                         wordLen = 0;
                         pc.printf("Give a word to send : ");
-                        L3_event_clearEventFlag(L3_event_dataToSend);
-
-                        pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
+                        L3_event_clearEventFlag(L3_event_dataToSend);     
+                        pc.printf("NOW YOUR STATE IS  L3STATE_WAIT_SAY ! ! : \n");  
                         main_state = L3STATE_WAIT_SAY;         
                     }
                 } else {
@@ -162,21 +160,15 @@ void L3_FSMrun(void)
             break;
 
         case L3STATE_SAY_ON:
-            L3service_processInputWord(); //보낼 메세지 입력하기
-/*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
-            それが条件だから...
-            
-                {                    
-                    //msg header setting
-                    strcpy((char*)sdu, (char*)originalWord);
-                    L3_LLI_dataReqFunc(sdu, wordLen);
+             L3service_processInputWord(); //보낼 메세지 입력하기
 
-                    debug_if(DBGMSG_L3, "[L3] sending msg....\n");
-                }
+            
+
+/*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
 
             input_timer 중지 
-*/
-        if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
+*/  
+            if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
         {
 #ifdef ENABLE_CHANGEIDCMD
                 if (strncmp((const char*)originalWord, "changeID: ",9) == 0)
@@ -193,13 +185,12 @@ void L3_FSMrun(void)
                 L3_LLI_dataReqFunc(sdu, wordLen);
                 debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 L3_timer_input_stopTimer();
+                wordLen = 0;
+                pc.printf("Give a word to send : ");
+                L3_event_clearEventFlag(L3_event_dataToSend);
                 main_state = L3STATE_IDLE;
             }
-            wordLen = 0;
-
-            pc.printf("Give a word to send : ");
-
-            L3_event_clearEventFlag(L3_event_dataToSend);
+            
         }
         
         else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
