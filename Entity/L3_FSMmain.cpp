@@ -29,13 +29,7 @@ static Serial pc(USBTX, USBRX);
 static void L3service_processInputWord(void)
 {
     char c = pc.getc();
-    // state가 say on 가 아니야. 
-        // char c = 'y' -> 발언권 보내
-    /*if (L3_timer_getTimerStatus(0) == 0 && c == 'y') {
-        L3_event_setEventFlag(L3_event_sayReqToSend);
-    }*/
-    
-    else if (!L3_event_checkEventFlag(L3_event_dataToSend))
+    if (!L3_event_checkEventFlag(L3_event_dataToSend))
     {
         if (c == '\n' || c == '\r')
         {
@@ -89,7 +83,7 @@ void L3_FSMrun(void)
                 debug("\n -------------------------------------------------\nRCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
                             dataPtr, size);
                 
-                pc.printf("Give a word to send : ");
+                pc.printf("Give a word to send : "); //?
                 
                 L3_event_clearEventFlag(L3_event_msgRcvd);
             }
@@ -106,12 +100,21 @@ void L3_FSMrun(void)
                 }
                 else
 #endif
-                // 1. a) SDU in, c1 = false
-                if (L3_timer_getTimerStatus(0) == 0) {
-                    if (originalWord[0] == 'y' && originalWord.size()==1) {
+                // 1. a) SDU in, c1 == false
+                if (L3_timer_input_getTimerStatus() == 0) {
+                    if (originalWord[0] == 'y' && originalWord[1] == NULL) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
-                    // 
-                    }
+                    strcpy((char*)sdu, (char*)originalWord);
+                    L3_msg_encodeReq(sdu);
+                        pc.printf(" now msg encoding");            
+                    L3_LLI_dataReqFunc(sdu, wordLen);
+                        pc.printf("now exec msg date req func ");
+
+                    debug_if(DBGMSG_L3, "[L3] sending msg....\n");
+                    
+                    main_state = L3STATE_WAIT_SAY;
+                    L3_timer_sayReq_startTimer();
+                    }else{} //IDLE에서 발언권 요청아닌 아무렇게 쓴 경우 버림
                 } 
 
 /* 
@@ -145,10 +148,8 @@ void L3_FSMrun(void)
             break;
 
         case L3STATE_SAY_ON:
-            // L3service_processInputWord 실행해요.
+            L3service_processInputWord();
 /*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
-
-            
             それが条件だから...
             
                 {                    
@@ -161,6 +162,27 @@ void L3_FSMrun(void)
 
             input_timer 중지 
 */
+#ifdef ENABLE_CHANGEIDCMD
+                if (strncmp((const char*)originalWord, "changeID: ",9) == 0)
+                {
+                    uint8_t myid = originalWord[9] - '0';
+                    debug("[L3] requesting to change to srce id %i\n", myid);
+                    L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
+                }
+                else
+#endif
+            if (L3_timer_getTimerStatus(0) == 1) { //a) SDU in, c1 == true
+                L3_msg_encodeData(sdu, originalWord, wordLen);
+                L3_LLI_dataReqFunc(sdu, wordLen);
+                debug_if(DBGMSG_L3, "[L3] sending msg....\n");
+                L3_timer_stopTimer(0);
+                main_state = L3STATE_IDLE;
+            }
+            wordLen = 0;
+
+            pc.printf("Give a word to send : ");
+
+            L3_event_clearEventFlag(L3_event_dataToSend);
             break;
 
         default :

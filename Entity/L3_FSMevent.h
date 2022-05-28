@@ -1,8 +1,10 @@
 typedef enum L3_event
 {
-    L3_event_msgRcvd = 2,
-    L3_event_dataToSend = 4,
-    L3_event_sayReqToSend = 6;
+    L3_event_msgRcvd = 0,
+    L3_event_dataToSend = 1,
+    L3_event_sayReqToSend = 2,
+    L3_event_inputTimeout = 3,
+    L3_event_sayReqTimeout = 4
 } L3_event_e;
 
 
