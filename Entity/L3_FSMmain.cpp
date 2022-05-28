@@ -110,8 +110,7 @@ void L3_FSMrun(void)
                     pc.printf("**************\n 이벤트 A) sayRequest 보내기\n ***************\n");
 
                         strcpy((char*)sdu, (char*)originalWord);
-                        
-                        // L3_msg_encodeReq(sdu);
+                        L3_msg_encodeReq(sdu);
                         L3_LLI_dataReqFunc(sdu, wordLen);
                             debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         L3_timer_sayReq_startTimer();
@@ -156,6 +155,33 @@ void L3_FSMrun(void)
                 // else if sayReject 
                     // IDLE State로 움직여요 
                     // sayReq_timer 중지해요
+            
+            if(L3_event_checkEventFlag(L3_event_msgRcvd))
+            {
+                uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t size = L3_LLI_getSize();
+
+                pc.printf("현재 스테이트 : WAIT_SAY\n");
+                pc.printf("메세지 잘 받아진다. \n\n");
+                if(L3_msg_checkIfAcpt(dataPtr))
+                {
+                    L3_timer_input_startTimer();
+                    L3_timer_sayReq_stopTimer();
+                    pc.printf("메세지 타입 : SAY_ACCEPT\n");
+                    pc.printf("발언권을 받았습니다. 원하는 메세지를 적어주세요. \n");
+                    pc.printf("SAY_ON 스테이트로 이동합니다. \n");
+                    main_state = L3STATE_SAY_ON;
+                }
+                else if(L3_msg_checkIfRejt(dataPtr))
+                {
+                    L3_timer_sayReq_stopTimer();
+                    pc.printf("메세지 타입 : REJECT\n");
+                    pc.printf("발언권을 얻지 못했습니다. \n");
+                    pc.printf("IDLE 스테이트로 이동합니다.\n");
+                    main_state = L3STATE_IDLE;
+                }
+            }
+
 
             break;
 
@@ -165,8 +191,8 @@ void L3_FSMrun(void)
             
 /*          조건 (input timer가 돌고있는지 확인 -> 돌고있으면 보내) 확인하고 
             input_timer 중지 
-*/
-        if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
+*/  
+            if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
         {
 #ifdef ENABLE_CHANGEIDCMD
                 if (strncmp((const char*)originalWord, "changeID: ",9) == 0)
@@ -185,9 +211,7 @@ void L3_FSMrun(void)
                 debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 L3_timer_input_stopTimer();
                 wordLen = 0;
-
                 pc.printf("Give a word to send : ");
-
                 L3_event_clearEventFlag(L3_event_dataToSend);
                 main_state = L3STATE_IDLE;
             }
