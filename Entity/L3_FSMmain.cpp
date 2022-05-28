@@ -41,7 +41,7 @@ static void L3service_processInputWord(void)
         {
             originalWord[wordLen++] = '\0';
             L3_event_setEventFlag(L3_event_dataToSend);
-            debug_if(DBGMSG_L3,"word is ready! ::: %s\n", originalWord);
+            debug_if(DBGMSG_L3,"키보드 입력 값 ::: %s\n", originalWord);
         }
         else
         {
@@ -55,7 +55,6 @@ static void L3service_processInputWord(void)
         }
     }
 }
-
 
 void L3_initFSM()
 {
@@ -106,22 +105,36 @@ void L3_FSMrun(void)
                 }
                 else
 #endif
-                // 1. a) SDU in, c1 = false
+                // 1. a) SDU in, c1 = false input 타이머가 돌고 있지 않을 때
                 if (L3_timer_input_getTimerStatus() == 0) {
+
+                    // 여기 originalWord[1] == null 로 할건지 말건지 ....
                     if (originalWord[0] == 'y' && wordLen == 2) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
-                    
+
+                    pc.printf("**************\n 이벤트 A) sayRequest 보내기\n ***************\n");
+
                         strcpy((char*)sdu, (char*)originalWord);
                         
-                        L3_msg_encodeReq(sdu);
-                            pc.printf(" now msg encoding \n");
-                        L3_LLI_dataReqFunc(sdu, wordLen);
-                            pc.printf("now exec msg date req func \n");
-                        debug_if(DBGMSG_L3, "[L3] sending msg....\n");
-                        main_state = L3STATE_WAIT_SAY;
-                            pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");
+                        // L3_msg_encodeReq(sdu);
+                        L3_LLI_dataReqFunc(sdu, wordLen)
+                            debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         L3_timer_sayReq_startTimer();
+
+                        wordLen = 0;
+                        pc.printf("Give a word to send : ");
+                        L3_event_clearEventFlag(L3_event_dataToSend);
+
+                        pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
+                        main_state = L3STATE_WAIT_SAY;         
                     }
+                } else {
+                    // 이거 나중에...................
+                    // IDLE일 때는 input 타이머 돌면 안된다.
+                    wordLen = 0;
+                    pc.printf("여기로 오면 안됨. 타이머 확인하기.");
+                    L3_timer_input_stopTimer();
+                    L3_event_clearEventFlag(L3_event_dataToSend);
                 }
 /* 
                 {                    
@@ -132,11 +145,6 @@ void L3_FSMrun(void)
                     debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                 }
 */
-                wordLen = 0;
-
-                pc.printf("Give a word to send : ");
-                // 메세지 보내는 이벤트 종료
-                L3_event_clearEventFlag(L3_event_dataToSend);         
             }
             break;
 
