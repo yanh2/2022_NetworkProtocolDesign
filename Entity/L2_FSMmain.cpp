@@ -100,7 +100,7 @@ void L2_FSMrun(void)
     //debug message
     if (prev_state != main_state)
     {
-        //debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
+        debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
         prev_state = main_state;
     }
 
