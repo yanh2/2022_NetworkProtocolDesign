@@ -107,7 +107,7 @@ void L3_FSMrun(void)
                 else
 #endif
                 // 1. a) SDU in, c1 = false
-                if (L3_timer_sayReq_getTimerStatus() == 0) {
+                if (L3_timer_input_getTimerStatus() == 0) {
                     if (originalWord[0] == 'y' && originalWord[1] == NULL) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
                     
@@ -120,9 +120,9 @@ void L3_FSMrun(void)
                         debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         main_state = L3STATE_WAIT_SAY;
                             pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : ");
+                        L3_timer_sayReq_startTimer();
                     }
                 } 
-
 /* 
                 {                    
                     //msg header setting
