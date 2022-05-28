@@ -40,3 +40,8 @@ uint8_t* L3_msg_getWord(uint8_t* msg)
 {
     return &msg[L3_MSG_OFFSET_DATA];
 }
+
+uint8_t* L3_msg_getType(uint8_t* msg)
+{
+    return &msg[L3_MSG_OFFSET_TYPE];
+}

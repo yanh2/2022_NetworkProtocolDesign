@@ -156,22 +156,33 @@ void L3_FSMrun(void)
                 // else if sayReject 
                     // IDLE State로 움직여요 
                     // sayReq_timer 중지해요
+            
             if(L3_event_checkEventFlag(L3_event_msgRcvd))
             {
+                uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t size = L3_LLI_getSize();
+
+                pc.printf("현재 스테이트 : WAIT_SAY\n");
+                pc.printf("메세지 잘 받아진다. \n\n");
                 if(L3_msg_checkIfAcpt(L3_MSG_TYPE_ACPT))
                 {
                     L3_timer_input_startTimer();
                     L3_timer_sayReq_stopTimer();
-                    pc.printf("발언권을 받았습니다. 원하는 메세지를 적어주세요. ");
+                    pc.printf("메세지 타입 : SAY_ACCEPT\n");
+                    pc.printf("발언권을 받았습니다. 원하는 메세지를 적어주세요. \n");
+                    pc.printf("SAY_ON 스테이트로 이동합니다. \n");
                     main_state = L3STATE_SAY_ON;
                 }
                 else if(L3_msg_checkIfRejt(L3_MSG_TYPE_REJT))
                 {
                     L3_timer_sayReq_stopTimer();
-                    pc.printf("발언권을 얻지 못했습니다. ");
+                    pc.printf("메세지 타입 : REJECT\n");
+                    pc.printf("발언권을 얻지 못했습니다. \n");
+                    pc.printf("IDLE 스테이트로 이동합니다.\n");
                     main_state = L3STATE_IDLE;
                 }
             }
+
 
             break;
 
