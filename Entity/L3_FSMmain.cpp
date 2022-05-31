@@ -10,6 +10,7 @@
 #define L3STATE_IDLE                0
 #define L3STATE_WAIT_SAY            1
 #define L3STATE_SAY_ON              2
+#define ENABLE_CHANGEIDCMD          1
 
 //state variables
 static uint8_t main_state = L3STATE_IDLE; //protocol state
@@ -89,15 +90,6 @@ void L3_FSMrun(void)
             // 메세지 보내는 경우
             else if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
             {
-#ifdef ENABLE_CHANGEIDCMD
-                if (strncmp((const char*)originalWord, "changeID: ",9) == 0)
-                {
-                    uint8_t myid = originalWord[9] - '0';
-                    debug("[L3] requesting to change to srce id %i\n", myid);
-                    L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
-                }
-                else
-#endif
                 // 1. a) SDU in, c1 = false input 타이머가 돌고 있지 않을 때
                 if (L3_timer_input_getTimerStatus() == 0) {
 
@@ -149,8 +141,7 @@ void L3_FSMrun(void)
             break;
 
         case L3STATE_WAIT_SAY:
-        
-            // 메세지 받는 것  // SDU 들어옴
+            // 메세지 받는 것  // SDU 들어옴   
             if(L3_event_checkEventFlag(L3_event_msgRcvd))
             {
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
@@ -170,6 +161,15 @@ void L3_FSMrun(void)
                     pc.printf("발언권을 받았습니다. 원하는 메세지를 적어주세요. \n");
                     pc.printf("SAY_ON 스테이트로 이동합니다. \n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
+
+#ifdef ENABLE_CHANGEIDCMD
+                {
+                    uint8_t myid = '3' - '0'; //숫자로 바꿈
+                    pc.printf("*****myid: %d\n", myid); //3으로 srcID 변경
+                    debug("[L3] requesting to change to srce id %i\n", myid);
+                    L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
+                }
+#endif
                     main_state = L3STATE_SAY_ON;
                 }
 
