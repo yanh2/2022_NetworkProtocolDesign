@@ -119,7 +119,7 @@ void L3_FSMrun(void)
                         L3_event_clearEventFlag(L3_event_dataToSend);
                         
                         pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
-                        pc.printf("Give a word to send : ");     
+                            
                         main_state = L3STATE_WAIT_SAY;
 
                     } else {

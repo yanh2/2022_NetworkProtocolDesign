@@ -22,7 +22,7 @@ int L3_msg_checkIfRejt(uint8_t* msg)
 }
 uint8_t L3_msg_encodeReq(uint8_t* msg_data)
 {
-    msg_data[L3_MSG_OFFSET_TYPE] =  L3_MSG_TYPE_REQ;
+    msg_data[L3_MSG_OFFSET_TYPE] = L3_MSG_TYPE_REQ;
     msg_data[L3_MSG_OFFSET_DATA] = 1;
 
     return L3_MSG_REQSIZE; //return값 뭘로하지?
