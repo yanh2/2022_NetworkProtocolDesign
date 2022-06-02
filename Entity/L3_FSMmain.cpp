@@ -74,15 +74,19 @@ void L3_FSMrun(void)
             // 메세지 받는 경우
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
+                
                 //Retrieving data info.
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t size = L3_LLI_getSize();
+
+                if(L3_msg_checkIfData(dataPtr)){ //승인,거절은 버려지게               
 
                 debug("\n -------------------------------------------------\nRCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
                             dataPtr, size);
                 
                 pc.printf("Give a word to send : ");
-                
+                }
+
                 L3_event_clearEventFlag(L3_event_msgRcvd);
             }
 
@@ -137,6 +141,7 @@ void L3_FSMrun(void)
                 }
 */
             }
+            
             break;
 
         case L3STATE_WAIT_SAY:
