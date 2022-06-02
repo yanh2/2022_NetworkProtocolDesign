@@ -6,8 +6,8 @@
 #define L3_MSG_TYPE_REJT    3
 
 #define L3_MSG_OFFSET_TYPE  0
-#define L3_MSG_OFFSET_SEQ   1
-#define L3_MSG_OFFSET_DATA  2
+//#define L3_MSG_OFFSET_SEQ   1
+#define L3_MSG_OFFSET_DATA  1
 
 #define L3_MSG_REQSIZE      3
 

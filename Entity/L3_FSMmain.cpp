@@ -10,7 +10,7 @@
 #define L3STATE_IDLE                0
 #define L3STATE_WAIT_SAY            1
 #define L3STATE_SAY_ON              2
-#define ENABLE_CHANGEIDCMD          1
+#define ENABLE_CHANGEIDCMD          3
 
 //state variables
 static uint8_t main_state = L3STATE_IDLE; //protocol state
@@ -85,6 +85,7 @@ void L3_FSMrun(void)
                             dataPtr, size);
                 
                 pc.printf("Give a word to send : ");
+                wordLen = 0;
                 }
 
                 L3_event_clearEventFlag(L3_event_msgRcvd);
@@ -199,14 +200,15 @@ void L3_FSMrun(void)
             {
                 pc.printf("**************\n SAY ON 에서 메세지  보내기\n ***************\n");
                 if (L3_timer_input_getTimerStatus() == 1) { //a) SDU in, c1 == true
-                    strcpy((char*)sdu, (char*)originalWord);
-                    L3_msg_encodeData(sdu, originalWord, wordLen);
+                    strcpy((char*)sdu, (char*)originalWord); //보낼 내용을 복사
+                    pc.printf("*****받아서 보내는 !! sdu메세지: %s**\n", sdu);
+                    L3_msg_encodeData(sdu, originalWord, wordLen); //타입지정위해서 인코드 필요
+                    pc.printf("*****받아서 보내는 후 !! sdu메세지: %s**\n", sdu);
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     //debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                     L3_timer_input_stopTimer();
                     wordLen = 0;
-                    pc.printf("Give a word to send : ");
-                    L3_event_clearEventFlag(L3_event_dataToSend);
+                    //pc.printf("Give a word to send : ");
 
 {        
 #ifdef ENABLE_CHANGEIDCMD
@@ -218,6 +220,7 @@ void L3_FSMrun(void)
                 }
 #endif
 }
+                    L3_event_clearEventFlag(L3_event_dataToSend);
                     main_state = L3STATE_IDLE;
                 }
             } 

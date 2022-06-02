@@ -92,7 +92,6 @@ void L3_FSMrun(void)
                     main_state = L3STATE_SAYING;
                 }  
             }
-
             break;
 
         case L3STATE_SAYING:
@@ -101,16 +100,22 @@ void L3_FSMrun(void)
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t* getWordData = L3_msg_getWord(dataPtr);
+                pc.printf("*****받아서 보내는 메세지: %s\n", dataPtr);
+                pc.printf("*****받아서 보내는 getWordData 메세지: %s\n", getWordData);
                 uint8_t size = L3_LLI_getSize();
+                pc.printf("*****받은 dataPtr: %s\n",L3_msg_checkIfData(dataPtr));
 
                 if (L3_msg_checkIfData(dataPtr)){
+                    L3_timer_stopTimer();
+
                     wordLen = size;
                     strcpy((char*)sdu, (char*)dataPtr);
-                    L3_msg_encodeData(sdu, dataPtr, wordLen); //이거 넣는건지 아닌지 확인하기
-                    pc.printf("*****받아서 보내는 메세지: %s***\n", dataPtr);
+                    L3_msg_encodeData(sdu, dataPtr, wordLen);
+                    debug("\n -------------------------------------------------\n받아서 보내는 RCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
+                            dataPtr, size);
+                    
                     L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
-
-                    L3_timer_stopTimer();
 
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
@@ -124,11 +129,7 @@ void L3_FSMrun(void)
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                 }
-                
-                
             }
-
-
             break;
         default :
             break;
