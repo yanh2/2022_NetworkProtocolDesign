@@ -61,7 +61,7 @@ void L3_FSMrun(void)
 {   
     if (prev_state != main_state)
     {
-        debug_if(DBGMSG_L3, "[L3] State transition from %i to %i\n", prev_state, main_state);
+        //debug_if(DBGMSG_L3, "[L3] State transition from %i to %i\n", prev_state, main_state);
         prev_state = main_state;
     }
 
@@ -79,22 +79,18 @@ void L3_FSMrun(void)
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t size = L3_LLI_getSize();
 
-                pc.printf("*************************\n");
-                pc.printf("*************************\n");
                 pc.printf((char*)L3_msg_getType);
-                pc.printf("*************************\n");
-                pc.printf("*************************\n");
                 if(L3_msg_checkIfReq(dataPtr)){
-                    pc.printf("*************************\n 발언권 받음여 \n ************************");
+                    pc.printf("*************************\n 발언권 요청 받음여 \n ************************");
                     L3_timer_startTimer();
-                    originalWord[wordLen++] = 's';
+                    originalWord[wordLen++] = 's'; //테스트??
                     strcpy((char*)sdu, (char*)originalWord);
-                    L3_msg_encodeAcpt(sdu);
+                    L3_msg_encodeAcpt(sdu); //발언권 승인 메세지 보냄
                     L3_LLI_dataReqFunc(sdu, wordLen);
+                    
+                    L3_event_clearEventFlag(L3_event_msgRcvd);
                     main_state = L3STATE_SAYING;
-                }
-                L3_event_clearEventFlag(L3_event_msgRcvd);
-                
+                }  
             }
 
             break;
@@ -110,14 +106,25 @@ void L3_FSMrun(void)
                 if (L3_msg_checkIfData(dataPtr)){
                     wordLen = size;
                     strcpy((char*)sdu, (char*)dataPtr);
+                    L3_msg_encodeData(sdu, dataPtr, wordLen); //이거 넣는건지 아닌지 확인하기
+                    L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
+
+                    L3_timer_stopTimer();
+
+                    wordLen = 0;
+
+                    L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("다보냄 ! ! : \n");  
+                    // 발언권 회수해야함
+                    main_state = L3STATE_IDLE;
+                } else if(L3_msg_checkIfReq(dataPtr)){
+                    //거절
+                    strcpy((char*)sdu, (char*)dataPtr);
+                    L3_msg_encodeRejt(sdu); 
                     L3_LLI_dataReqFunc(sdu, wordLen);
-                } 
-
-                wordLen = 0;
-
-                L3_event_clearEventFlag(L3_event_msgRcvd);
+                }
+                
             }
-            
 
 
             break;

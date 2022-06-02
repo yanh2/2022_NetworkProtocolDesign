@@ -63,7 +63,7 @@ void L3_FSMrun(void)
 {   
     if (prev_state != main_state)
     {
-        debug_if(DBGMSG_L3, "[L3] State transition from %i to %i\n", prev_state, main_state);
+        //debug_if(DBGMSG_L3, "[L3] State transition from %i to %i\n", prev_state, main_state);
         prev_state = main_state;
     }
 
@@ -71,7 +71,6 @@ void L3_FSMrun(void)
     switch (main_state)
     {
         case L3STATE_IDLE: //IDLE state description
-            
             // 메세지 받는 경우
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
@@ -203,6 +202,17 @@ void L3_FSMrun(void)
                     wordLen = 0;
                     pc.printf("Give a word to send : ");
                     L3_event_clearEventFlag(L3_event_dataToSend);
+
+{        
+#ifdef ENABLE_CHANGEIDCMD
+                {
+                    uint8_t myid = '1' - '0'; //숫자로 바꿈
+                    pc.printf("*****myid: %d\n", myid); //1으로 srcID 변경(발언권 없애는 의미_이거 아니면 변수 바뀐거 체크하는 핸들러 필요)
+                    debug("[L3] requesting to change to srce id %i\n", myid);
+                    L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
+                }
+#endif
+}
                     main_state = L3STATE_IDLE;
                 }
             } 

@@ -16,7 +16,8 @@ int L3_msg_checkIfData(uint8_t* msg);
 int L3_msg_checkIfReq(uint8_t* msg);
 int L3_msg_checkIfAcpt(uint8_t* msg);
 int L3_msg_checkIfRejt(uint8_t* msg);
-uint8_t L3_msg_encodeAcpt(uint8_t* msg_data); //entity에서 만드는건 req만 만듦
+uint8_t L3_msg_encodeAcpt(uint8_t* msg_data); //arbitrator에서 만드는건 승인(Acpt), 거절(Rejt), 데이터 만듦
+uint8_t L3_msg_encodeRejt(uint8_t* msg_data);
 uint8_t L3_msg_encodeData(uint8_t* msg_data, uint8_t* data, int len);
 uint8_t* L3_msg_getWord(uint8_t* msg);
 uint8_t* L3_msg_getType(uint8_t* msg);
