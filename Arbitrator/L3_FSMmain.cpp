@@ -34,7 +34,7 @@ static void L3service_processInputWord(void)
         {
             originalWord[wordLen++] = '\0';
             L3_event_setEventFlag(L3_event_dataToSend);
-            debug_if(DBGMSG_L3,"키보드 입력 값: ::: %s\n", originalWord);
+            debug_if(DBGMSG_L3,"KEYBOARD INPUT ::: %s\n", originalWord);
         }
         else
         {
@@ -81,7 +81,6 @@ void L3_FSMrun(void)
 
                 pc.printf((char*)L3_msg_getType);
                 if(L3_msg_checkIfReq(dataPtr)){
-                    pc.printf("*************************\n 발언권 요청 받음여 \n ************************");
                     L3_timer_startTimer();
                     originalWord[wordLen++] = 's';
                     strcpy((char*)sdu, (char*)originalWord);
@@ -101,10 +100,7 @@ void L3_FSMrun(void)
             {
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t* getWordData = L3_msg_getWord(dataPtr);
-                pc.printf("*****받아서 보내는 메세지: %s\n", dataPtr);
-                pc.printf("*****받아서 보내는 getWordData 메세지: %s\n", getWordData);
                 uint8_t size = L3_LLI_getSize();
-                pc.printf("*****받은 dataPtr: %s\n",L3_msg_checkIfData(dataPtr));
 
                 if (L3_msg_checkIfData(dataPtr)){
                     L3_timer_stopTimer();
@@ -112,14 +108,14 @@ void L3_FSMrun(void)
                     wordLen = size;
                     strcpy((char*)sdu, (char*)dataPtr);
                     L3_msg_encodeData(sdu, dataPtr, wordLen);
-                    debug("\n -------------------------------------------------\n받아서 보내는 RCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
-                            dataPtr, size);
+                    debug("\n -------------------------------------------------\n RCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
+                            getWordData, size);
                     
                     L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
 
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                    pc.printf("다보냄 ! ! : \n");
+                    
                     // 발언권 회수해야함
                     main_state = L3STATE_IDLE;
                 } else if(L3_msg_checkIfReq(dataPtr)){
