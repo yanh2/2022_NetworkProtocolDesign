@@ -83,7 +83,7 @@ void L3_FSMrun(void)
                 if(L3_msg_checkIfReq(dataPtr)){
                     pc.printf("*************************\n 발언권 요청 받음여 \n ************************");
                     L3_timer_startTimer();
-                    originalWord[wordLen++] = 's'; //테스트??
+                    originalWord[wordLen++] = 's';
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeAcpt(sdu); //발언권 승인 메세지 보냄
                     L3_LLI_dataReqFunc(sdu, wordLen);
@@ -107,14 +107,14 @@ void L3_FSMrun(void)
                     wordLen = size;
                     strcpy((char*)sdu, (char*)dataPtr);
                     L3_msg_encodeData(sdu, dataPtr, wordLen); //이거 넣는건지 아닌지 확인하기
+                    pc.printf("*****받아서 보내는 메세지: %s***\n", dataPtr);
                     L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
 
                     L3_timer_stopTimer();
 
                     wordLen = 0;
-
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                    pc.printf("다보냄 ! ! : \n");  
+                    pc.printf("다보냄 ! ! : \n");
                     // 발언권 회수해야함
                     main_state = L3STATE_IDLE;
                 } else if(L3_msg_checkIfReq(dataPtr)){
@@ -122,7 +122,9 @@ void L3_FSMrun(void)
                     strcpy((char*)sdu, (char*)dataPtr);
                     L3_msg_encodeRejt(sdu); 
                     L3_LLI_dataReqFunc(sdu, wordLen);
+                    wordLen = 0;
                 }
+                
                 
             }
 
