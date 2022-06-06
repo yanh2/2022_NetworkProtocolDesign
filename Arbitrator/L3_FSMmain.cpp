@@ -79,7 +79,6 @@ void L3_FSMrun(void)
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t size = L3_LLI_getSize();
 
-                pc.printf((char*)L3_msg_getType);
                 if(L3_msg_checkIfReq(dataPtr)){
                     L3_timer_startTimer();
                     originalWord[wordLen++] = 's';
@@ -89,7 +88,8 @@ void L3_FSMrun(void)
                     
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     main_state = L3STATE_SAYING;
-                }  
+                } 
+                wordLen = 0;
             }
             break;
 
@@ -106,11 +106,12 @@ void L3_FSMrun(void)
                     L3_timer_stopTimer();
 
                     wordLen = size;
-                    strcpy((char*)sdu, (char*)dataPtr);
-                    L3_msg_encodeData(sdu, dataPtr, wordLen);
-                    debug("\n -------------------------------------------------\n RCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
-                            getWordData, size);
-                    
+                    strcpy((char*)sdu, (char*)getWordData);
+                    L3_msg_encodeData(sdu, getWordData, wordLen);
+                    pc.printf("====================================================\n");
+                    debug("\n RCVD MSG : %s (length:%i)\n", 
+                                getWordData, size);
+                    pc.printf("====================================================\n");
                     L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
 
                     wordLen = 0;
@@ -122,8 +123,10 @@ void L3_FSMrun(void)
                     //거절
                     strcpy((char*)sdu, (char*)dataPtr);
                     L3_msg_encodeRejt(sdu); 
+
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
+                    L3_event_clearEventFlag(L3_event_msgRcvd);
                 }
             }
             break;
