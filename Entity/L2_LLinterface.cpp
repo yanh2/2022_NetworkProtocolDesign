@@ -31,7 +31,7 @@ void L2_LLI_dataCnfFunc(int err)
 //interface event : DATA_IND, RX data has arrived
 void L2_LLI_dataIndFunc(uint8_t srcId, uint8_t* dataPtr, uint8_t size)
 {
-    debug_if(DBGMSG_L2, "\n --> DATA IND : src:%i, size:%i\n", srcId, size);
+    //debug_if(DBGMSG_L2, "\n --> DATA IND : src:%i, size:%i\n", srcId, size);
 
     if ((float)rand()/RAND_MAX > L2_LLI_PKT_LOSS)
     {
