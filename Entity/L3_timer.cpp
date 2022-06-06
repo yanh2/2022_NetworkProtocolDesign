@@ -26,14 +26,14 @@ void L3_timer_sayReq_timeoutHandler()
 //timer related functions ---------------------------
 void L3_timer_input_startTimer()
 {
-    uint8_t waitTime = 60;
+    uint8_t waitTime = 30; //초
     input_timer.attach(L3_timer_input_timeoutHandler, waitTime);
     input_timerStatus = 1;
 }
 
 void L3_timer_sayReq_startTimer()
 {
-    uint8_t waitTime = 60;
+    uint8_t waitTime = 5;
     sayReq_timer.attach(L3_timer_sayReq_timeoutHandler, waitTime);
     sayReq_timerStatus = 1;
 }

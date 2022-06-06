@@ -191,7 +191,7 @@ void L3_FSMrun(void)
                     L3_timer_sayReq_stopTimer();
                     pc.printf("Your SAY is rejected. \n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                    pc.printf("NOW YOUR STATE IS IDLE SAY ! ! : \n");
+                    pc.printf("NOW YOUR STATE IS IDLE ! ! : \n");
                     main_state = L3STATE_IDLE;
                 }
             }
@@ -204,7 +204,7 @@ void L3_FSMrun(void)
                 pc.printf("**************\n SEND TO MSG ON << SAY ON  >> STATE \n ***************\n");
                 if (L3_timer_input_getTimerStatus() == 1) { //a) SDU in, c1 == true
                     strcpy((char*)sdu, (char*)originalWord); //보낼 내용을 복사
-                    L3_msg_encodeData(sdu, originalWord, wordLen); //타입지정위해서 인코드 필요
+                    L3_msg_encodeData(sdu, originalWord, wordLen); //타입지정 위해서 인코드 필요
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     L3_timer_input_stopTimer();
                     wordLen = 0;
@@ -220,21 +220,20 @@ void L3_FSMrun(void)
 #endif
 }
                     L3_event_clearEventFlag(L3_event_dataToSend);
-                    pc.printf("NOW YOUR STATE IS IDLE SAY ! ! : \n");
-                    main_state = L3STATE_IDLE;
-                } else{ //타이머 끝났을 때 
-                    L3_event_clearEventFlag(L3_event_dataToSend);
+                    pc.printf("NOW YOUR STATE IS IDLE ! ! : \n");
                     main_state = L3STATE_IDLE;
                 }
             } 
             
             // 인풋 타임아웃 -> 아이들로 돌아가세용
             else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
+                pc.printf("Your input timer is timeout.(checkEventFlag) NOW YOUR STATE IS IDLE ! ! : \n");
                 L3_event_clearEventFlag(L3_event_inputTimeout);
                 main_state = L3STATE_IDLE;
             }
 
             else if(L3_event_checkEventFlag(L3_event_msgRcvd)){ //예외) 어떠한 경우에 sayReject PDU 받을 경우
+                L3_timer_input_stopTimer();
                 L3_event_clearEventFlag(L3_event_msgRcvd);
                 main_state = L3STATE_IDLE;
             }
