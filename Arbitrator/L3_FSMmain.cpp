@@ -121,7 +121,8 @@ void L3_FSMrun(void)
                     main_state = L3STATE_IDLE;
                 } else if(L3_msg_checkIfReq(dataPtr)){
                     //거절
-                    strcpy((char*)sdu, (char*)dataPtr);
+                    wordLen = size;
+                    strcpy((char*)sdu, (char*)getWordData); //getWordData으로 바꿈
                     L3_msg_encodeRejt(sdu); 
 
                     L3_LLI_dataReqFunc(sdu, wordLen);

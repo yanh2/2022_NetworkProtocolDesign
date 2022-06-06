@@ -191,6 +191,7 @@ void L3_FSMrun(void)
                     L3_timer_sayReq_stopTimer();
                     pc.printf("Your SAY is rejected. \n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("NOW YOUR STATE IS IDLE SAY ! ! : \n");
                     main_state = L3STATE_IDLE;
                 }
             }
@@ -219,21 +220,24 @@ void L3_FSMrun(void)
 #endif
 }
                     L3_event_clearEventFlag(L3_event_dataToSend);
+                    pc.printf("NOW YOUR STATE IS IDLE SAY ! ! : \n");
+                    main_state = L3STATE_IDLE;
+                } else{ //타이머 끝났을 때 
+                    L3_event_clearEventFlag(L3_event_dataToSend);
                     main_state = L3STATE_IDLE;
                 }
             } 
             
-            // // 인풋 타임아웃 -> 아이들로 돌아가세용
-            // else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
-            //     L3_event_clearEventFlag(L3_event_inputTimeout);
-            //     main_state = L3STATE_IDLE;
-            // }
+            // 인풋 타임아웃 -> 아이들로 돌아가세용
+            else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
+                L3_event_clearEventFlag(L3_event_inputTimeout);
+                main_state = L3STATE_IDLE;
+            }
 
-            
-            // else if(L3_event_checkEventFlag(L3_event_msgRcvd)){ //어떠한 경우에 sayReject PDU 받을 경우
-            //     L3_event_clearEventFlag(L3_event_msgRcvd);
-            //     main_state = L3STATE_IDLE;
-            // }
+            else if(L3_event_checkEventFlag(L3_event_msgRcvd)){ //예외) 어떠한 경우에 sayReject PDU 받을 경우
+                L3_event_clearEventFlag(L3_event_msgRcvd);
+                main_state = L3STATE_IDLE;
+            }
 
             break;
 
