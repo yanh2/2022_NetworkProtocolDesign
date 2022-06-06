@@ -77,13 +77,23 @@ void L3_FSMrun(void)
                 
                 //Retrieving data info.
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t* getWordData = L3_msg_getWord(dataPtr);
                 uint8_t size = L3_LLI_getSize();
 
                 if(L3_msg_checkIfData(dataPtr)){ //승인,거절은 버려지게               
 
-                debug("\n -------------------------------------------------\nRCVD MSG : %s (length:%i)\n -------------------------------------------------\n", 
-                            dataPtr, size);
+
+                /* 방법 1.  */
+                pc.printf("====================================================\n");
+                debug("\n RCVD MSG : %s (length:%i)\n", 
+                            getWordData, size);
                 
+                /* 방법 2.  */
+                pc.printf("====================================================\n");
+                debug("\n RCVD MSG : %s (length:%i)\n", 
+                            &dataPtr[L3_MSG_OFFSET_DATA], size);
+
+
                 pc.printf("Give a word to send : ");
                 wordLen = 0;
                 }
