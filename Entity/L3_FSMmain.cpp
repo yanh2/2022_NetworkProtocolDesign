@@ -56,7 +56,7 @@ void L3_initFSM()
     pc.attach(&L3service_processInputWord, Serial::RxIrq);
 
     //pc.printf("Give a word to send : ");
-    pc.printf("Please, Enter 'y' for Request saying. : ");
+    pc.printf("Please, Enter 'y' for Request saying. ::: ");
 }
 
 void L3_FSMrun(void)
@@ -67,32 +67,30 @@ void L3_FSMrun(void)
         prev_state = main_state;
     }
 
-    //FSM should be implemented here! ---->>>>
     switch (main_state)
     {
         case L3STATE_IDLE: //IDLE state description
-            // 메세지 받는 경우
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
-            {
-                
+            {   
                 //Retrieving data info.
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t* getWordData = L3_msg_getWord(dataPtr);
                 uint8_t size = L3_LLI_getSize();
-
-                if(L3_msg_checkIfData(dataPtr)){ //승인,거절은 버려지게               
-
-
+                
+                /*
+                 *  [EVENT] B-3 > 메세지 화면 출력 
+                 */
+               
+                if(L3_msg_checkIfData(dataPtr)){           
                 /* 방법 1.  */
                 pc.printf("====================================================\n");
-                debug("\n RCVD MSG : %s (length:%i)\n", 
-                            getWordData, size);
+                debug("\n 1 getWordData ) RCVD MSG : %s (length:%i)\n", getWordData, size);
+                pc.printf("====================================================\n");
                 
                 /* 방법 2.  */
                 pc.printf("====================================================\n");
-                debug("\n RCVD MSG : %s (length:%i)\n", 
-                            &dataPtr[L3_MSG_OFFSET_DATA], size);
-
+                debug("\n 2 &dataPtr[] ) RCVD MSG : %s (length:%i)\n",  &dataPtr[L3_MSG_OFFSET_DATA], size);
+                pc.printf("====================================================\n");
 
                 pc.printf("Give a word to send : ");
                 wordLen = 0;
@@ -102,30 +100,29 @@ void L3_FSMrun(void)
             }
 
             // 메세지 보내는 경우
-            else if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
+            else if (L3_event_checkEventFlag(L3_event_dataToSend))
             {
-                // 1. a) SDU in, c1 = false input 타이머가 돌고 있지 않을 때
-                if (L3_timer_input_getTimerStatus() == 0) {
+                /*
+                 *  [EVENT] A > 'y' 입력 -> 발언권 요청
+                 *  c1 = false (timer 정상 동작 확인)
+                 */
 
-                    // 여기 originalWord[1] == null 로 할건지 말건지 ....
+                if (L3_timer_input_getTimerStatus() == 0) {
                     if (originalWord[0] == 'y' && wordLen == 2) {
                     //sayReq PDU 보내기(헤더 타입 변경), state 이동시킴, sayReq_timer 시작
-
-                    pc.printf("**************\n Event A) Sending sayRequest \n ***************\n");
+                    pc.printf("\n**************\n Event A) Sending sayRequest In IDLE State\n ***************\n");
                     
                         strcpy((char*)sdu, (char*)originalWord);
                         L3_msg_encodeReq(sdu);
                         L3_LLI_dataReqFunc(sdu, wordLen);
                             //debug_if(DBGMSG_L3, "[L3] sending msg....\n");
 
-
                         L3_timer_sayReq_startTimer();
                         wordLen = 0;
                         
                         L3_event_clearEventFlag(L3_event_dataToSend);
                         
-                        pc.printf("NOW YOUR STATE IS  WAIT SAY ! ! : \n");  
-                            
+                        pc.printf("\n*******************\n   [STATE] WAIT_SAY     \n*******************\n");  
                         main_state = L3STATE_WAIT_SAY;
 
                     } else {
@@ -134,109 +131,202 @@ void L3_FSMrun(void)
                         L3_event_clearEventFlag(L3_event_dataToSend);  
                     }
                 } else {
-                    // 이거 나중에...................
                     // IDLE일 때는 input 타이머 돌면 안된다.
                     wordLen = 0;
-                    pc.printf("여기로 오면 안됨. 타이머 확인하기.");
                     L3_timer_input_stopTimer();
                     L3_event_clearEventFlag(L3_event_dataToSend);
+                    pc.printf("\n--------------------\n [ERROR] timer error occurred. \n--------------------\n");
+                    pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    main_state = L3STATE_IDLE;
                 }
-/* 
-                {                    
-                    //msg header setting
-                    strcpy((char*)sdu, (char*)originalWord);
-                    L3_LLI_dataReqFunc(sdu, wordLen);
-
-                    debug_if(DBGMSG_L3, "[L3] sending msg....\n");
-                }
-*/
             }
-            
             break;
 
         case L3STATE_WAIT_SAY:
-            // 메세지 받는 것  // SDU 들어옴   
-            if(L3_event_checkEventFlag(L3_event_msgRcvd))
+            if(L3_event_checkEventFlag(L3_event_msgRcvd)) // SAY_ACCEPT or SAY_REJECT 대기
             {
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t* getWordData = L3_msg_getWord(dataPtr);
                 uint8_t size = L3_LLI_getSize();
 
-                pc.printf("CURT STATE: WAIT_SAY\n");
+                /*
+                 *  [EVENT] B-1 > sayAccept 받았을 때
+                 *  1) input_timer 시작   2) sayReq_timer 중지 3) sayON State로 이동
+                 */
 
-                // if sayAccept  
-                    // input_timer 시작하면서 sayReq_timer 중지
-                    // sayON State로 움직여요 
                 if(L3_msg_checkIfAcpt(dataPtr))
                 {
                     L3_timer_input_startTimer();
                     L3_timer_sayReq_stopTimer();
-                    pc.printf("You have SAY. Please enter the message you want.");
+                    pc.printf("\n-----------------------\n [ACCEPT] You have SAY. Please enter the message you want. \n-----------------------\n");
+
                     L3_event_clearEventFlag(L3_event_msgRcvd);
 
 #ifdef ENABLE_CHANGEIDCMD
                 {
                     uint8_t myid = '3' - '0'; //숫자로 바꿈
-                    debug("[L3] requesting to change to srce id %i\n", myid);
+                    debug("[L3] requesting to change to src id %i\n", myid);
                     L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
                 }
 #endif
+                     pc.printf("\n*******************\n   [STATE] SAY_ON    \n*******************\n");
+                     pc.printf("Give a word to send : ");  
                     main_state = L3STATE_SAY_ON;
                 }
 
-                // else if sayReject 
-                    // IDLE State로 움직여요 
-                    // sayReq_timer 중지해요
+                /*
+                 *  [EVENT] B-2 > sayReject 받았을 때
+                 *  1) sayReq_timer 중지  2) IDLE State로 이동
+                 */
+
                 else if(L3_msg_checkIfRejt(dataPtr))
                 {
                     L3_timer_sayReq_stopTimer();
-                    pc.printf("Your SAY is rejected. \n");
+                    pc.printf("\n--------------------\n [REJECT] Your SAY is rejected. \n--------------------\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                    pc.printf("NOW YOUR STATE IS IDLE ! ! : \n");
+                    pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
                     main_state = L3STATE_IDLE;
                 }
+
+                /*
+                 *  [EVENT] B-3 > 메세지 화면 출력 
+                 */
+               
+                else if(L3_msg_checkIfData(dataPtr)){           
+                    /* 방법 1.  */
+                    pc.printf("====================================================\n");
+                    debug("\n 1 getWordData ) RCVD MSG : %s (length:%i)\n", getWordData, size);
+                    pc.printf("====================================================\n");
+                    
+                    /* 방법 2.  */
+                    pc.printf("====================================================\n");
+                    debug("\n 2 &dataPtr[] ) RCVD MSG : %s (length:%i)\n",  &dataPtr[L3_MSG_OFFSET_DATA], size);
+                    pc.printf("====================================================\n");
+                }
+
+                L3_event_clearEventFlag(L3_event_msgRcvd);
             }
-            
+
+            /*
+             *  [EVENT] C-1 > sayReq_timer 타임아웃 : 발언권 승인이 정해진 시간 내에 도착하지 않았을 경우 
+             */
+            else if(L3_event_checkEventFlag(L3_event_sayReqTimeout)){
+                L3_event_clearEventFlag(L3_event_sayReqTimeout);
+                pc.printf("\n--------------------\n [TIMEOUT] Your say request time is over. \n--------------------\n");
+                pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                main_state = L3STATE_IDLE;
+            }
             break;
 
         case L3STATE_SAY_ON:
             if (L3_event_checkEventFlag(L3_event_dataToSend)) //if data needs to be sent (keyboard input)
             {
-                pc.printf("**************\n SEND TO MSG ON << SAY ON  >> STATE \n ***************\n");
-                if (L3_timer_input_getTimerStatus() == 1) { //a) SDU in, c1 == true
-                    strcpy((char*)sdu, (char*)originalWord); //보낼 내용을 복사
+
+                /*
+                *  [EVENT] A > If 키보드 입력, Arbitrator에게 메세지 전송 
+                *  c1 == true ( SAY_ON State에서 타이머 정상동작하는지 확인. )
+                */
+
+                if (L3_timer_input_getTimerStatus() == 1) { 
+                    strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeData(sdu, originalWord, wordLen); //타입지정 위해서 인코드 필요
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     L3_timer_input_stopTimer();
                     wordLen = 0;
-                    //pc.printf("Give a word to send : ");
-
 {        
 #ifdef ENABLE_CHANGEIDCMD
                 {
                     uint8_t myid = '1' - '0'; //숫자로 바꿈
-                    debug("[L3] requesting to change to srce id %i\n", myid);
+                    debug("[L3] requesting to change to src id %i\n", myid);
                     L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
                 }
 #endif
 }
                     L3_event_clearEventFlag(L3_event_dataToSend);
-                    pc.printf("NOW YOUR STATE IS IDLE ! ! : \n");
+                    pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    main_state = L3STATE_IDLE;
+                } else {
+                    // SAY_ON 일 때는 input 타이머 돌아야 함
+                    wordLen = 0;
+                    L3_timer_input_stopTimer();
+                    L3_event_clearEventFlag(L3_event_dataToSend);
+                    pc.printf("\n--------------------\n [ERROR] timer error occurred. \n--------------------\n");
+                    pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
                     main_state = L3STATE_IDLE;
                 }
             } 
             
-            // 인풋 타임아웃 -> 아이들로 돌아가세용
+            /*
+            *  [EVENT] C-2 > Input_timer 타임아웃 
+            */
             else if(L3_event_checkEventFlag(L3_event_inputTimeout)){
-                pc.printf("Your input timer is timeout.(checkEventFlag) NOW YOUR STATE IS IDLE ! ! : \n");
+{        
+#ifdef ENABLE_CHANGEIDCMD
+                {
+                    uint8_t myid = '1' - '0'; //숫자로 바꿈
+                    debug("[L3] requesting to change to src id %i\n", myid);
+                    L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
+                }
+#endif
+}
                 L3_event_clearEventFlag(L3_event_inputTimeout);
+                pc.printf("\n--------------------\n [TIMEOUT] Your input time is over. \n--------------------\n");
+                pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                pc.printf("Please, Enter 'y' for Request saying. ::: ");
                 main_state = L3STATE_IDLE;
             }
 
-            else if(L3_event_checkEventFlag(L3_event_msgRcvd)){ //예외) 어떠한 경우에 sayReject PDU 받을 경우
-                L3_timer_input_stopTimer();
+               
+
+            else if(L3_event_checkEventFlag(L3_event_msgRcvd)){
+                uint8_t* dataPtr = L3_LLI_getMsgPtr();
+                uint8_t* getWordData = L3_msg_getWord(dataPtr);
+                uint8_t size = L3_LLI_getSize();
+
+                /*
+                *  [EVENT] B-2 > 예외) sayReject PDU 받을 경우
+                */
+                if(L3_msg_checkIfRejt(dataPtr)){
+{        
+#ifdef ENABLE_CHANGEIDCMD
+                    {
+                        uint8_t myid = '1' - '0'; //숫자로 바꿈
+                        debug("[L3] requesting to change to src id %i\n", myid);
+                        L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
+                    }
+#endif
+}
+                    L3_timer_input_stopTimer();
+                    L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("\n--------------------\n [ERROR] An unknown error occurred. \n--------------------\n");
+                    pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    main_state = L3STATE_IDLE;
+                }
+                
+                /*
+                 *  [EVENT] B-3 > 메세지 화면 출력 
+                 */
+                else if(L3_msg_checkIfData(dataPtr)){           
+                    /* 방법 1.  */
+                    pc.printf("====================================================\n");
+                    debug("\n 1 getWordData ) RCVD MSG : %s (length:%i)\n", getWordData, size);
+                    pc.printf("====================================================\n");
+                    
+                    /* 방법 2.  */
+                    pc.printf("====================================================\n");
+                    debug("\n 2 &dataPtr[] ) RCVD MSG : %s (length:%i)\n",  &dataPtr[L3_MSG_OFFSET_DATA], size);
+                    pc.printf("====================================================\n");
+                }
+
                 L3_event_clearEventFlag(L3_event_msgRcvd);
-                main_state = L3STATE_IDLE;
             }
+
 
             break;
 
