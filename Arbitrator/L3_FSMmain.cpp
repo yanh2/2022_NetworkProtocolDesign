@@ -128,7 +128,12 @@ void L3_FSMrun(void)
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                }
+                } else if(L3_event_checkEventFlag(L3_event_Timeout)){
+                L3_event_clearEventFlag(L3_event_Timeout);
+                pc.printf("\n--------------------\n [TIMEOUT] 엔티티가 메세지 안보냄 \n--------------------\n");
+                pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");
+                main_state = L3STATE_IDLE;
+            }
             }
             break;
         default :
