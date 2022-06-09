@@ -100,7 +100,7 @@ void L2_FSMrun(void)
     //debug message
     if (prev_state != main_state)
     {
-        //debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
+        debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
         prev_state = main_state;
     }
 
@@ -155,7 +155,7 @@ void L2_FSMrun(void)
                 debug_if(DBGMSG_L2, "[L2] configuring source ID now...\n");
                 if (L2_LLI_configSrcId(myL2ID) != 0)
                 {
-                    debug("[L2][ERROR] Failed to config source ID.");
+                    //debug("[L2][ERROR] Failed to config source ID.");
                 }
                 L2_event_clearEventFlag(L2_event_configSrcId);
             }
@@ -241,7 +241,7 @@ void L2_FSMrun(void)
             {
                 if (retxCnt >= L2_ARQ_MAXRETRANSMISSION)
                 {
-                    debug("[L2][WARNING] Failed to send data %i, max retx cnt reached! \n", L2_msg_getSeq(arqPdu));
+                    //debug("[L2][WARNING] Failed to send data %i, max retx cnt reached! \n", L2_msg_getSeq(arqPdu));
                     main_state = L2STATE_IDLE;
                     //arqPdu clear
                     //retxCnt clear

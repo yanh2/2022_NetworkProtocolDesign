@@ -4,6 +4,7 @@
 #include "L3_LLinterface.h"
 #include "protocol_parameters.h"
 #include "mbed.h"
+#include <string.h>
 
 
 //FSM state -------------------------------------------------
@@ -47,6 +48,12 @@ static void L3service_processInputWord(void)
                 }
             }
         }
+    }
+}
+
+static void clearArray(int len) {
+    for(int i=0; i<len; i++){
+        originalWord[i] ='\0';
     }
 }
 
@@ -116,6 +123,7 @@ void L3_FSMrun(void)
                         L3_msg_encodeReq(sdu);
                         L3_LLI_dataReqFunc(sdu, wordLen);
                             //debug_if(DBGMSG_L3, "[L3] sending msg....\n");
+                        //clearArray(wordLen);
 
                         L3_timer_sayReq_startTimer();
                         wordLen = 0;
@@ -127,7 +135,7 @@ void L3_FSMrun(void)
 
                     } else {
                         wordLen = 0;
-                        pc.printf("You should request a say first. Enter 'y' \n");
+                        pc.printf("You should request a say first. Enter 'y' ::: \n");
                         L3_event_clearEventFlag(L3_event_dataToSend);  
                     }
                 } else {
@@ -170,8 +178,9 @@ void L3_FSMrun(void)
                     L3_LLI_configReqFunc(L2L3_CFGTYPE_SRCID, myid);
                 }
 #endif
-                     pc.printf("\n*******************\n   [STATE] SAY_ON    \n*******************\n");
-                     pc.printf("Give a word to send : ");  
+                    pc.printf("\n*******************\n   [STATE] SAY_ON    \n*******************\n");
+                    pc.printf("You got a say. ");
+                    pc.printf("Give a word to send ::: ");  
                     main_state = L3STATE_SAY_ON;
                 }
 
@@ -234,8 +243,9 @@ void L3_FSMrun(void)
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeData(sdu, originalWord, wordLen); //타입지정 위해서 인코드 필요
                     L3_LLI_dataReqFunc(sdu, wordLen);
+                    //clearArray(wordLen);
                     L3_timer_input_stopTimer();
-                    wordLen = 0;
+                    
 {        
 #ifdef ENABLE_CHANGEIDCMD
                 {
@@ -246,6 +256,10 @@ void L3_FSMrun(void)
 #endif
 }
                     L3_event_clearEventFlag(L3_event_dataToSend);
+
+                    // memset(&originalWord[L3_MSG_OFFSET_DATA], '\0', wordLen*sizeof(uint8_t));
+                    wordLen = 0;
+                    pc.printf("Sending msg is completed. \n");
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
                     pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;

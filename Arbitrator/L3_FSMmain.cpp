@@ -4,6 +4,7 @@
 #include "L3_LLinterface.h"
 #include "protocol_parameters.h"
 #include "mbed.h"
+#include <string.h>
 
 
 //FSM state -------------------------------------------------
@@ -50,11 +51,16 @@ static void L3service_processInputWord(void)
     }
 }
 
+static void clearArray(int len) {
+    for(int i=0; i<len; i++){
+        sdu[i] ='\0';
+    }
+}
 
 void L3_initFSM()
 {
     //initialize service layer
-    pc.attach(&L3service_processInputWord, Serial::RxIrq);
+    //pc.attach(&L3service_processInputWord, Serial::RxIrq);
     pc.printf("Waiting a say request. ::: ");
 
 }
@@ -84,12 +90,14 @@ void L3_FSMrun(void)
                 uint8_t size = L3_LLI_getSize();
 
                 if(L3_msg_checkIfReq(dataPtr)){
+                    pc.printf("\n**************\n SayRequest IN \n ***************\n");
+
                     L3_timer_startTimer();
                     originalWord[wordLen++] = 's';
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeAcpt(sdu); //발언권 승인 메세지 보냄
                     L3_LLI_dataReqFunc(sdu, wordLen);
-                    pc.printf("\n**************\n SayAccept is Sent \n ***************\n");
+                    pc.printf("\n**************\n  Sent SayAccept \n ***************\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n*******************\n   [STATE] SAYING     \n*******************\n");  
                     main_state = L3STATE_SAYING;
@@ -121,12 +129,15 @@ void L3_FSMrun(void)
                                 getWordData, size);
                     pc.printf("====================================================\n");
                     L3_LLI_dataReqFunc(sdu, wordLen);
+                   
                     pc.printf("\n**************\n Completed sending messages to entities \n ***************\n");
 
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     
-                    pc.printf("\n*******************\n   [STATE] IDLE     \n*******************\n");  
+                    pc.printf("\n*******************\n   [STATE] IDLE     \n*******************\n");
+                    pc.printf("Waiting a say request. ::: "); 
+                    
                     main_state = L3STATE_IDLE;
                 } 
                 
@@ -141,6 +152,7 @@ void L3_FSMrun(void)
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("\n**************\n other entity wants a say. send REJECT \n ***************\n");
                     pc.printf("\n**************\n Sent a sayReq \n ***************\n");
                 }
 
@@ -151,6 +163,7 @@ void L3_FSMrun(void)
                 L3_event_clearEventFlag(L3_event_Timeout);
                 pc.printf("\n--------------------\n [TIMEOUT] The entity did not send a message \n--------------------\n");
                 pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                pc.printf("Waiting a say request. ::: ");
                 main_state = L3STATE_IDLE;
             }
             break;
