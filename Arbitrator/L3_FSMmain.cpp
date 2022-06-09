@@ -28,6 +28,7 @@ static Serial pc(USBTX, USBRX);
 static void L3service_processInputWord(void)
 {
     char c = pc.getc();
+
     if (!L3_event_checkEventFlag(L3_event_dataToSend))
     {
         if (c == '\n' || c == '\r')
@@ -54,6 +55,7 @@ void L3_initFSM()
 {
     //initialize service layer
     pc.attach(&L3service_processInputWord, Serial::RxIrq);
+    pc.printf("Waiting a say request. ::: ");
 
 }
 
@@ -65,14 +67,16 @@ void L3_FSMrun(void)
         prev_state = main_state;
     }
 
-    //FSM should be implemented here! ---->>>>
     switch (main_state)
     {
         case L3STATE_IDLE: //IDLE state description
             
-            // 메세지를 받는 경우 
-            // 1. sayReq : input_timer 시작 & sayAccept pdu send
-            // 2. data : 무시 
+            /*
+            *  [EVENT] A-1 > 
+            *  if) type = sayRequest, 1) input_timer 시작 2) sayAccept pdu send
+            *  if) type == data, 무시
+            */
+
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
                 //Retrieving data info.
@@ -85,8 +89,9 @@ void L3_FSMrun(void)
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeAcpt(sdu); //발언권 승인 메세지 보냄
                     L3_LLI_dataReqFunc(sdu, wordLen);
-                    
+                    pc.printf("\n**************\n SayAccept is Sent \n ***************\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("\n*******************\n   [STATE] SAYING     \n*******************\n");  
                     main_state = L3STATE_SAYING;
                 } 
                 wordLen = 0;
@@ -94,13 +99,16 @@ void L3_FSMrun(void)
             break;
 
         case L3STATE_SAYING:
-            //누군가 발언권을 가지고 있는 상태
-            // Entity의 키보드 입력을 기다린다. 
             if (L3_event_checkEventFlag(L3_event_msgRcvd)) //if data reception event happens
             {
                 uint8_t* dataPtr = L3_LLI_getMsgPtr();
                 uint8_t* getWordData = L3_msg_getWord(dataPtr);
                 uint8_t size = L3_LLI_getSize();
+
+                /*
+                 *  [EVENT] A-2 > 발언권 가진 Entity에게 메세지가 온 경우
+                 *  1) Input timer 중지 2) 메세지를 다른 Entity들에게 전송 3) 발언권 회수(IDLE로 이동)
+                 */
 
                 if (L3_msg_checkIfData(dataPtr)){
                     L3_timer_stopTimer();
@@ -112,23 +120,40 @@ void L3_FSMrun(void)
                     debug("\n RCVD MSG : %s (length:%i)\n", 
                                 getWordData, size);
                     pc.printf("====================================================\n");
-                    L3_LLI_dataReqFunc(sdu, wordLen); //여기가 전송
+                    L3_LLI_dataReqFunc(sdu, wordLen);
+                    pc.printf("\n**************\n Completed sending messages to entities \n ***************\n");
 
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     
-                    // 발언권 회수해야함
+                    pc.printf("\n*******************\n   [STATE] IDLE     \n*******************\n");  
                     main_state = L3STATE_IDLE;
-                } else if(L3_msg_checkIfReq(dataPtr)){
-                    //거절
+                } 
+                
+                /*
+                 *  [EVENT] A-1 > 이미 한 Entity가 발언권을 가진 상태에서 다른 Entity가 발언권 요청한 상황
+                 *  발언권 요청한 Entity에게 sayReq를 전송
+                 */
+                else if(L3_msg_checkIfReq(dataPtr)){
                     wordLen = size;
-                    strcpy((char*)sdu, (char*)getWordData); //getWordData으로 바꿈
+                    strcpy((char*)sdu, (char*)getWordData); 
                     L3_msg_encodeRejt(sdu); 
-
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
+                    pc.printf("\n**************\n Sent a sayReq \n ***************\n");
                 }
+
+                /*
+                 *  [EVENT] B > 발언권 가진 Entity가 정해진 시간 내에 메세지를 보내지 않음
+                 */
+                else if(L3_event_checkEventFlag(L3_event_Timeout)){
+                L3_event_clearEventFlag(L3_event_Timeout);
+                pc.printf("\n--------------------\n [TIMEOUT] The entity did not send a message \n--------------------\n");
+                pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
+                main_state = L3STATE_IDLE;
+            }
+            break;
             }
             break;
         default :

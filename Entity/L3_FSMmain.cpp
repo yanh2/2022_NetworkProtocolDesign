@@ -56,7 +56,7 @@ void L3_initFSM()
     pc.attach(&L3service_processInputWord, Serial::RxIrq);
 
     //pc.printf("Give a word to send : ");
-    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+    pc.printf("Please, Enter 'y' for Request a say. ::: ");
 }
 
 void L3_FSMrun(void)
@@ -127,7 +127,7 @@ void L3_FSMrun(void)
 
                     } else {
                         wordLen = 0;
-                        pc.printf("You should request saying first. Enter 'y' \n");
+                        pc.printf("You should request a say first. Enter 'y' \n");
                         L3_event_clearEventFlag(L3_event_dataToSend);  
                     }
                 } else {
@@ -137,7 +137,7 @@ void L3_FSMrun(void)
                     L3_event_clearEventFlag(L3_event_dataToSend);
                     pc.printf("\n--------------------\n [ERROR] timer error occurred. \n--------------------\n");
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;
                 }
             }
@@ -159,7 +159,7 @@ void L3_FSMrun(void)
                 {
                     L3_timer_input_startTimer();
                     L3_timer_sayReq_stopTimer();
-                    pc.printf("\n-----------------------\n [ACCEPT] You have SAY. Please enter the message you want. \n-----------------------\n");
+                    pc.printf("\n-----------------------\n [ACCEPT] You have a say. Please enter the message you want. \n-----------------------\n");
 
                     L3_event_clearEventFlag(L3_event_msgRcvd);
 
@@ -186,7 +186,7 @@ void L3_FSMrun(void)
                     pc.printf("\n--------------------\n [REJECT] Your SAY is rejected. \n--------------------\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;
                 }
 
@@ -216,7 +216,7 @@ void L3_FSMrun(void)
                 L3_event_clearEventFlag(L3_event_sayReqTimeout);
                 pc.printf("\n--------------------\n [TIMEOUT] Your say request time is over. \n--------------------\n");
                 pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                pc.printf("Please, Enter 'y' for Request a say. ::: ");
                 main_state = L3STATE_IDLE;
             }
             break;
@@ -247,7 +247,7 @@ void L3_FSMrun(void)
 }
                     L3_event_clearEventFlag(L3_event_dataToSend);
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;
                 } else {
                     // SAY_ON 일 때는 input 타이머 돌아야 함
@@ -256,7 +256,7 @@ void L3_FSMrun(void)
                     L3_event_clearEventFlag(L3_event_dataToSend);
                     pc.printf("\n--------------------\n [ERROR] timer error occurred. \n--------------------\n");
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;
                 }
             } 
@@ -277,7 +277,7 @@ void L3_FSMrun(void)
                 L3_event_clearEventFlag(L3_event_inputTimeout);
                 pc.printf("\n--------------------\n [TIMEOUT] Your input time is over. \n--------------------\n");
                 pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                pc.printf("Please, Enter 'y' for Request a say. ::: ");
                 main_state = L3STATE_IDLE;
             }
 
@@ -305,7 +305,7 @@ void L3_FSMrun(void)
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n--------------------\n [ERROR] An unknown error occurred. \n--------------------\n");
                     pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                    pc.printf("Please, Enter 'y' for Request saying. ::: ");
+                    pc.printf("Please, Enter 'y' for Request a say. ::: ");
                     main_state = L3STATE_IDLE;
                 }
                 
