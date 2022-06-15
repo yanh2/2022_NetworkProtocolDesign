@@ -121,7 +121,13 @@ void L3_FSMrun(void)
                     
                         strcpy((char*)sdu, (char*)originalWord);
                         L3_msg_encodeReq(sdu);
-                        L3_LLI_dataReqFunc(sdu, wordLen);
+
+                        /*
+                        
+                        여기 wordLen 추가함
+                        */
+                    
+                        L3_LLI_dataReqFunc(sdu, wordLen+1);
                             //debug_if(DBGMSG_L3, "[L3] sending msg....\n");
                         //clearArray(wordLen);
 

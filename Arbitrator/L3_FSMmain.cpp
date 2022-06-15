@@ -96,7 +96,16 @@ void L3_FSMrun(void)
                     originalWord[wordLen++] = 's';
                     strcpy((char*)sdu, (char*)originalWord);
                     L3_msg_encodeAcpt(sdu); //발언권 승인 메세지 보냄
-                    L3_LLI_dataReqFunc(sdu, wordLen);
+
+                    /*
+                        
+                    여기 wordLen 추가함
+                    */
+                    
+                    L3_LLI_dataReqFunc(sdu, wordLen+1);
+
+
+
                     pc.printf("\n**************\n  Sent SayAccept \n ***************\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n*******************\n   [STATE] SAYING     \n*******************\n");  
@@ -128,7 +137,13 @@ void L3_FSMrun(void)
                     debug("\n RCVD MSG : %s (length:%i)\n", 
                                 getWordData, size);
                     pc.printf("====================================================\n");
-                    L3_LLI_dataReqFunc(sdu, wordLen);
+                    
+                    /*
+                        
+                        여기 wordLen 추가함
+                    */
+                    
+                    L3_LLI_dataReqFunc(sdu, wordLen+1);
                    
                     pc.printf("\n**************\n Completed sending messages to entities \n ***************\n");
 
@@ -149,7 +164,13 @@ void L3_FSMrun(void)
                     wordLen = size;
                     strcpy((char*)sdu, (char*)getWordData); 
                     L3_msg_encodeRejt(sdu); 
-                    L3_LLI_dataReqFunc(sdu, wordLen);
+                    
+                    /*
+                        
+                        여기 wordLen 추가함
+                    */
+                    
+                    L3_LLI_dataReqFunc(sdu, wordLen+1);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n**************\n other entity wants a say. send REJECT \n ***************\n");
