@@ -51,12 +51,6 @@ static void L3service_processInputWord(void)
     }
 }
 
-static void clearArray(int len) {
-    for(int i=0; i<len; i++){
-        sdu[i] ='\0';
-    }
-}
-
 void L3_initFSM()
 {
     //initialize service layer
@@ -90,7 +84,7 @@ void L3_FSMrun(void)
                 uint8_t size = L3_LLI_getSize();
 
                 if(L3_msg_checkIfReq(dataPtr)){
-                    pc.printf("\n**************\n SayRequest IN \n ***************\n");
+                    pc.printf("\nSayRequest IN\n");
 
                     L3_timer_startTimer();
                     originalWord[wordLen++] = 's';
@@ -102,13 +96,15 @@ void L3_FSMrun(void)
                     여기 wordLen 추가함
                     */
                     
-                    L3_LLI_dataReqFunc(sdu, wordLen+1);
+                    L3_LLI_dataReqFunc(sdu, wordLen);
 
 
 
-                    pc.printf("\n**************\n  Sent SayAccept \n ***************\n");
+                    pc.printf("\nSent SayAccept\n");
                     L3_event_clearEventFlag(L3_event_msgRcvd);
-                    pc.printf("\n*******************\n   [STATE] SAYING     \n*******************\n");  
+                    pc.printf("\n*********************************************************\n");
+                    pc.printf("                      [STATE] SAYING");
+                    pc.printf("\n*********************************************************\n");  
                     main_state = L3STATE_SAYING;
                 } 
                 wordLen = 0;
@@ -131,27 +127,25 @@ void L3_FSMrun(void)
                     L3_timer_stopTimer();
 
                     wordLen = size;
+                    // null 문자 추가 삽입 for 문자 잘림 방짐
+                    getWordData[wordLen] = '\0';
                     strcpy((char*)sdu, (char*)getWordData);
                     L3_msg_encodeData(sdu, getWordData, wordLen);
                     pc.printf("====================================================\n");
-                    debug("\n RCVD MSG : %s (length:%i)\n", 
-                                getWordData, size);
+                    debug("RCVD MSG : %s (length:%i)\n", getWordData, size);
                     pc.printf("====================================================\n");
-                    
-                    /*
-                        
-                        여기 wordLen 추가함
-                    */
-                    
-                    L3_LLI_dataReqFunc(sdu, wordLen+1);
+
+                    L3_LLI_dataReqFunc(sdu, wordLen);
                    
-                    pc.printf("\n**************\n Completed sending messages to entities \n ***************\n");
+                    pc.printf("\nCompleted sending messages to entities\n");
 
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     
-                    pc.printf("\n*******************\n   [STATE] IDLE     \n*******************\n");
-                    pc.printf("Waiting a say request. ::: "); 
+                    pc.printf("\n*********************************************************\n");
+                    pc.printf("                      [STATE] IDLE");
+                    pc.printf("\n*********************************************************\n");
+                    pc.printf("Waiting a say request. ::: \n"); 
                     
                     main_state = L3STATE_IDLE;
                 } 
@@ -170,7 +164,7 @@ void L3_FSMrun(void)
                         여기 wordLen 추가함
                     */
                     
-                    L3_LLI_dataReqFunc(sdu, wordLen+1);
+                    L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n**************\n other entity wants a say. send REJECT \n ***************\n");
@@ -183,8 +177,10 @@ void L3_FSMrun(void)
                 else if(L3_event_checkEventFlag(L3_event_Timeout)){
                 L3_event_clearEventFlag(L3_event_Timeout);
                 pc.printf("\n--------------------\n [TIMEOUT] The entity did not send a message \n--------------------\n");
-                pc.printf("\n*******************\n   [STATE] IDLE    \n*******************\n");  
-                pc.printf("Waiting a say request. ::: ");
+                pc.printf("\n*********************************************************\n");
+                pc.printf("                      [STATE] IDLE");
+                pc.printf("\n*********************************************************\n");  
+                pc.printf("Waiting a say request. \n");
                 main_state = L3STATE_IDLE;
             }
             break;
