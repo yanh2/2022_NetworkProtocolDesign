@@ -152,23 +152,18 @@ void L3_FSMrun(void)
                 
                 /*
                  *  [EVENT] A-1 > 이미 한 Entity가 발언권을 가진 상태에서 다른 Entity가 발언권 요청한 상황
-                 *  발언권 요청한 Entity에게 sayReq를 전송
+                 *  발언권 요청한 Entity에게 sayRejt를 전송
                  */
                 else if(L3_msg_checkIfReq(dataPtr)){
                     wordLen = size;
                     strcpy((char*)sdu, (char*)getWordData); 
                     L3_msg_encodeRejt(sdu); 
                     
-                    /*
-                        
-                        여기 wordLen 추가함
-                    */
-                    
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n**************\n other entity wants a say. send REJECT \n ***************\n");
-                    pc.printf("\n**************\n Sent a sayReq \n ***************\n");
+                    pc.printf("\n**************\n Sent a sayRejt \n ***************\n");
                 }
 
                 /*
