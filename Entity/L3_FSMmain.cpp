@@ -91,7 +91,7 @@ void L3_FSMrun(void)
                     } else {
                         /* 방법 1.  */
                         pc.printf("====================================================\n");
-                        debug("RCVD MSG : %s (length:%i)\n", getWordData, size);
+                        debug("RCVD MSG : %s \n", getWordData);
                         pc.printf("====================================================\n");
                         
                         /* 방법 2.  */
@@ -218,7 +218,7 @@ void L3_FSMrun(void)
                 else if(L3_msg_checkIfData(dataPtr)){           
                     /* 방법 1.  */
                     pc.printf("====================================================\n");
-                    debug("RCVD MSG : %s (length:%i)\n", getWordData, size);
+                    debug("RCVD MSG : %s \n", getWordData);
                     pc.printf("====================================================\n");
                     
                     /* 방법 2.  */
@@ -355,7 +355,7 @@ void L3_FSMrun(void)
                 else if(L3_msg_checkIfData(dataPtr)){           
                     /* 방법 1.  */
                     pc.printf("====================================================\n");
-                    debug("RCVD MSG : %s (length:%i)\n", getWordData, size);
+                    debug("RCVD MSG : %s \n", getWordData);
                     pc.printf("====================================================\n");
                     
                     /* 방법 2.  */

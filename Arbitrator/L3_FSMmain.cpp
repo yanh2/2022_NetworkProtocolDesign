@@ -152,29 +152,24 @@ void L3_FSMrun(void)
                 
                 /*
                  *  [EVENT] A-1 > 이미 한 Entity가 발언권을 가진 상태에서 다른 Entity가 발언권 요청한 상황
-                 *  발언권 요청한 Entity에게 sayReq를 전송
+                 *  발언권 요청한 Entity에게 sayRejt를 전송
                  */
                 else if(L3_msg_checkIfReq(dataPtr)){
                     wordLen = size;
                     strcpy((char*)sdu, (char*)getWordData); 
                     L3_msg_encodeRejt(sdu); 
                     
-                    /*
-                        
-                        여기 wordLen 추가함
-                    */
-                    
                     L3_LLI_dataReqFunc(sdu, wordLen);
                     wordLen = 0;
                     L3_event_clearEventFlag(L3_event_msgRcvd);
                     pc.printf("\n**************\n other entity wants a say. send REJECT \n ***************\n");
-                    pc.printf("\n**************\n Sent a sayReq \n ***************\n");
+                    pc.printf("\n**************\n Sent a sayRejt \n ***************\n");
                 }
-
+            }
                 /*
                  *  [EVENT] B > 발언권 가진 Entity가 정해진 시간 내에 메세지를 보내지 않음
                  */
-                else if(L3_event_checkEventFlag(L3_event_Timeout)){
+            else if(L3_event_checkEventFlag(L3_event_Timeout)){
                 L3_event_clearEventFlag(L3_event_Timeout);
                 pc.printf("\n--------------------\n [TIMEOUT] The entity did not send a message \n--------------------\n");
                 pc.printf("\n*********************************************************\n");
@@ -182,8 +177,6 @@ void L3_FSMrun(void)
                 pc.printf("\n*********************************************************\n");  
                 pc.printf("Waiting a say request. \n");
                 main_state = L3STATE_IDLE;
-            }
-            break;
             }
             break;
         default :

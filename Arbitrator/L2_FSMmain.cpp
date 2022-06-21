@@ -232,7 +232,7 @@ void L2_FSMrun(void)
                 }
                 else
                 {
-                    debug_if(DBGMSG_L2, "[L2]ACK seq number is weird! (expected : %i, received : %i\n", L2_msg_getSeq(arqPdu),L2_msg_getSeq(dataPtr));
+                    //debug_if(DBGMSG_L2, "[L2]ACK seq number is weird! (expected : %i, received : %i\n", L2_msg_getSeq(arqPdu),L2_msg_getSeq(dataPtr));
                 }
 
                 L2_event_clearEventFlag(L2_event_ackRcvd);
