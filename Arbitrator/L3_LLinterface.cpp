@@ -17,9 +17,9 @@ int (*L3_LLI_configReqFunc)(uint8_t type, uint8_t value);
 //interface event : DATA_IND, RX data has arrived
 void L3_LLI_dataInd(uint8_t* dataPtr, uint8_t size, int8_t snr, int16_t rssi)
 {
-    debug_if(DBGMSG_L3, "\n --> DATA IND : size:%i, %s\n", size, dataPtr);
+    //debug_if(DBGMSG_L3, "\n --> DATA IND : size:%i, %s\n", size, dataPtr);
 
-    memcpy(rcvdMsg, dataPtr, size*sizeof(uint8_t));
+    memcpy(rcvdMsg, dataPtr, size*sizeof(uint8_t)+1);
     rcvdSize = size;
     rcvdSnr = snr;
     rcvdRssi = rssi;

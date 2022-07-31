@@ -1,0 +1,10 @@
+
+*.o
+!PHYMAC_layer.o
+*.d
+!PHYMAC_layer.d
+*.bin
+*.elf
+*.ld
+*.hex
+Entity/L2_FSMmain.cpp

@@ -100,7 +100,7 @@ void L2_FSMrun(void)
     //debug message
     if (prev_state != main_state)
     {
-        debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
+        //debug_if(DBGMSG_L2, "[L2] State transition from %i to %i\n", prev_state, main_state);
         prev_state = main_state;
     }
 
@@ -144,7 +144,7 @@ void L2_FSMrun(void)
                 seqNum = (seqNum + 1)%L2_MSSG_MAX_SEQNUM;
                 retxCnt = 0;
 #endif
-                debug_if(DBGMSG_L2, "[L2] sending to %i (seq:%i)\n", destL2ID, (seqNum-1)%L2_MSSG_MAX_SEQNUM);
+                //debug_if(DBGMSG_L2, "[L2] sending to %i (seq:%i)\n", destL2ID, (seqNum-1)%L2_MSSG_MAX_SEQNUM);
 
                 main_state = L2STATE_TX;
 
@@ -152,10 +152,10 @@ void L2_FSMrun(void)
             }
             else if (L2_event_checkEventFlag(L2_event_configSrcId))
             {
-                debug_if(DBGMSG_L2, "[L2] configuring source ID now...\n");
+                //debug_if(DBGMSG_L2, "[L2] configuring source ID now...\n");
                 if (L2_LLI_configSrcId(myL2ID) != 0)
                 {
-                    debug("[L2][ERROR] Failed to config source ID.");
+                    //debug("[L2][ERROR] Failed to config source ID.");
                 }
                 L2_event_clearEventFlag(L2_event_configSrcId);
             }
@@ -226,13 +226,13 @@ void L2_FSMrun(void)
                 uint8_t* dataPtr = L2_LLI_getRcvdDataPtr();
                 if ( L2_msg_getSeq(arqPdu) == L2_msg_getSeq(dataPtr) )
                 {
-                    debug_if(DBGMSG_L2, "[L2] ACK is correctly received! \n");
+                    //debug_if(DBGMSG_L2, "[L2] ACK is correctly received! \n");
                     L2_timer_stopTimer();
                     main_state = L2STATE_IDLE;
                 }
                 else
                 {
-                    debug_if(DBGMSG_L2, "[L2]ACK seq number is weird! (expected : %i, received : %i\n", L2_msg_getSeq(arqPdu),L2_msg_getSeq(dataPtr));
+                    //debug_if(DBGMSG_L2, "[L2]ACK seq number is weird! (expected : %i, received : %i\n", L2_msg_getSeq(arqPdu),L2_msg_getSeq(dataPtr));
                 }
 
                 L2_event_clearEventFlag(L2_event_ackRcvd);
@@ -241,14 +241,14 @@ void L2_FSMrun(void)
             {
                 if (retxCnt >= L2_ARQ_MAXRETRANSMISSION)
                 {
-                    debug("[L2][WARNING] Failed to send data %i, max retx cnt reached! \n", L2_msg_getSeq(arqPdu));
+                    //debug("[L2][WARNING] Failed to send data %i, max retx cnt reached! \n", L2_msg_getSeq(arqPdu));
                     main_state = L2STATE_IDLE;
                     //arqPdu clear
                     //retxCnt clear
                 }
                 else //retx < max, then goto TX for retransmission
                 {
-                    debug_if(DBGMSG_L2, "[L2] timeout! retransmit\n");
+                    //debug_if(DBGMSG_L2, "[L2] timeout! retransmit\n");
                     L2_LLI_sendData(arqPdu, pduSize, destL2ID);
                     //Setting ARQ parameter 
                     retxCnt += 1;
